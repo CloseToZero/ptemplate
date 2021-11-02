@@ -1347,21 +1347,22 @@ internal details, which are subject to change at any time."
                      (lambda () "Run after copying files."
                        ,@(nreverse after-copy-forms)))))
        (when (or finalize-forms open-bg open-fg)
-         `((add-hook 'ptemplate--finalize-hook
-                     (lambda () "Run after template expansion finishes."
-                       ,@(nreverse finalize-forms)
+         `((ptemplate--appendf
+            (lambda () "Run after template expansion finishes."
+              ,@(nreverse finalize-forms)
 ;;; :open-bg, :open
-                       ;; First open all files from :open-bg and then all files
-                       ;; except the last :open file (push prepends to the list,
-                       ;; so they are in reverse) using `find-file-noselect'.
-                       ;; Edge case: open-fg is nil; however, `cdr' nil -> nil.
-                       ,@(cl-loop for bg-f in (nconc (nreverse open-bg)
-                                                     (nreverse (cdr open-fg)))
-                                  collect `(find-file-noselect (ptemplate-target ,bg-f)))
-                       ;; Are there any files to be opened in the foreground? If
-                       ;; yes, open only the first that way.
-                       ,@(when open-fg
-                           (list (car open-fg)))))))
+              ;; First open all files from :open-bg and then all files
+              ;; except the last :open file (push prepends to the list,
+              ;; so they are in reverse) using `find-file-noselect'.
+              ;; Edge case: open-fg is nil; however, `cdr' nil -> nil.
+              ,@(cl-loop for bg-f in (nconc (nreverse open-bg)
+                                            (nreverse (cdr open-fg)))
+                         collect `(find-file-noselect (ptemplate-target ,bg-f)))
+              ;; Are there any files to be opened in the foreground? If
+              ;; yes, open only the first that way.
+              ,@(when open-fg
+                  (list (car open-fg))))
+            (ptemplate--copy-context-finalize-hook ptemplate--cur-copy-context))))
        (when snippet-env
          `((ptemplate--appendlf
             (list ,@(cl-loop
