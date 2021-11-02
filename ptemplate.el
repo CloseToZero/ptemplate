@@ -164,6 +164,7 @@ Variables are set buffer-locally."
 (defun ptemplate--snippet-chain->continue ()
   "Make the next snippet/buffer in the snippet chain current."
   (let* ((context ptemplate--snippet-chain-context)
+         (env (ptemplate--snippet-chain-env context))
          (realchain (ptemplate--snippet-chain-snippets context))
          (next (car realchain)))
     (when realchain
@@ -172,7 +173,9 @@ Variables are set buffer-locally."
 
     (cond
      ((null next)
-      (mapc #'funcall (ptemplate--snippet-chain-finalize-hook context)))
+      (with-temp-buffer
+        (ptemplate--setup-snippet-env env)
+        (mapc #'funcall (ptemplate--snippet-chain-finalize-hook context))))
      ((bufferp next) (switch-to-buffer next))
      ((ptemplate--snippet-chain-mapping-p next)
       (let ((target (ptemplate--snippet-chain-mapping-target next))
@@ -182,7 +185,7 @@ Variables are set buffer-locally."
         (with-current-buffer (find-file-noselect target)
           (make-local-variable 'ptemplate--snippet-chain-context)
 
-          (ptemplate--setup-snippet-env (ptemplate--snippet-chain-env context))
+          (ptemplate--setup-snippet-env env)
           ;; let the user configure the buffer, with the snippet-env already
           ;; bound.
           (mapc #'funcall (ptemplate--snippet-chain-newbuf-hook context))
