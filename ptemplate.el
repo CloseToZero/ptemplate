@@ -579,7 +579,7 @@ manually copies files around in its .ptemplate.el :init block.
              (_ (error "Unknown type %S in mapping %S" type mapping)))
 
            finally do
-           (run-hooks 'ptemplate--before-snippet-hook)
+           (mapc #'funcall (ptemplate--copy-context-before-snippets context))
            (ptemplate--snippet-chain->start
             (nreverse yasnippets) snippet-env
             (ptemplate--copy-context-finalize-hook context)
@@ -1342,9 +1342,10 @@ internal details, which are subject to change at any time."
          `((ptemplate-inherit ,@inherited-templates)))
        (nreverse late-forms)
        (when before-yas-forms
-         `((add-hook 'ptemplate--before-snippet-hook
-                     (lambda () "Run before expanding snippets."
-                       ,@(nreverse before-yas-forms)))))
+         `((ptemplate--appendf
+            (lambda () "Run before expanding snippets."
+              ,@(nreverse before-yas-forms))
+            (ptemplate--copy-context-before-snippets ptemplate--cur-copy-context))))
        (when after-copy-forms
          `((add-hook 'ptemplate--after-copy-hook
                      (lambda () "Run after copying files."
