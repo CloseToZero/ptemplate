@@ -1364,7 +1364,7 @@ internal details, which are subject to change at any time."
               ;; Are there any files to be opened in the foreground? If
               ;; yes, open only the first that way.
               ,@(when open-fg
-                  (list (car open-fg))))
+                  (list `(find-file (ptemplate-target ,(car open-fg))))))
             (ptemplate--copy-context-finalize-hook ptemplate--cur-copy-context))))
        (when snippet-env
          `((ptemplate--appendlf
