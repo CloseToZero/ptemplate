@@ -137,6 +137,14 @@ variable is always either `let' bound or buffer-local, to
 functions operate on this variable, as defined in their calling
 environment.")
 
+(defcustom ptemplate-use-emulation-mode-map-alists nil
+  "Use `emulation-mode-map-alists' to avoid the key bindings \
+of `ptemplate-snippet-chain-mode' being overridden."
+  :group 'ptemplate
+  :type '(boolean))
+
+(defvar ptemplate-snippet-chain-mode-map-alist nil)
+
 (defun ptemplate--read-file (file)
   "Read FILE and return its contents a string."
   (with-temp-buffer
@@ -153,13 +161,26 @@ This mode is only for keybindings."
             (define-key map (kbd "C-c C-l") #'ptemplate-snippet-chain-later)
             map)
   (when ptemplate-snippet-chain-mode
+    (when ptemplate-use-emulation-mode-map-alists
+      (setq ptemplate-snippet-chain-mode-map-alist
+            ;; Ensure use the newest value of
+            ;; `ptemplate-snippet-chain-mode-map'.
+            `((ptemplate-snippet-chain-mode
+               . ,ptemplate-snippet-chain-mode-map)))
+      (add-to-list 'emulation-mode-map-alists
+                   'ptemplate-snippet-chain-mode-map-alist))
     (if-let ((key (car (where-is-internal #'ptemplate-snippet-chain-next))))
         (message "Press %s to continue to the next snippet or finish"
                  (key-description key))
-      ;; The key binding may be overridden by other minor modes, let the user
-      ;; invoke the command instead (or define another key binding).
+      ;; The key binding may be overridden by other minor modes, let the
+      ;; user invoke the command instead (or define another key binding).
       (message "Invoke command `ptemplate-snippet-chain-next' \
-to continue to the next snippet or finish"))))
+to continue to the next snippet or finish")))
+  (when (or (not ptemplate-snippet-chain-mode)
+            (not ptemplate-use-emulation-mode-map-alists))
+    (setq emulation-mode-map-alists
+          (delete 'ptemplate-snippet-chain-mode-map-alist
+                  emulation-mode-map-alists))))
 
 (defun ptemplate--setup-snippet-env (snippet-env)
   "Set all (SYMBOL . VALUE) pairs in SNIPPET-ENV.
