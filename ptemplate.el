@@ -153,8 +153,13 @@ This mode is only for keybindings."
             (define-key map (kbd "C-c C-l") #'ptemplate-snippet-chain-later)
             map)
   (when ptemplate-snippet-chain-mode
-    (message "Press %s to continue to the next snippet or finish"
-             (key-description (car (where-is-internal #'ptemplate-snippet-chain-next))))))
+    (if-let ((key (car (where-is-internal #'ptemplate-snippet-chain-next))))
+        (message "Press %s to continue to the next snippet or finish"
+                 (key-description key))
+      ;; The key binding may be overridden by other minor modes, let the user
+      ;; invoke the command instead (or define another key binding).
+      (message "Invoke command `ptemplate-snippet-chain-next' \
+to continue to the next snippet or finish"))))
 
 (defun ptemplate--setup-snippet-env (snippet-env)
   "Set all (SYMBOL . VALUE) pairs in SNIPPET-ENV.
