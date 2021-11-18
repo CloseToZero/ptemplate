@@ -151,7 +151,10 @@ This mode is only for keybindings."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c") #'ptemplate-snippet-chain-next)
             (define-key map (kbd "C-c C-l") #'ptemplate-snippet-chain-later)
-            map))
+            map)
+  (when ptemplate-snippet-chain-mode
+    (message "Press %s to continue to the next snippet or finish"
+             (key-description (car (where-is-internal #'ptemplate-snippet-chain-next))))))
 
 (defun ptemplate--setup-snippet-env (snippet-env)
   "Set all (SYMBOL . VALUE) pairs in SNIPPET-ENV.
