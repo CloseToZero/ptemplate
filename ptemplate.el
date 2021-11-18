@@ -506,6 +506,12 @@ SNIPPET-SETUP-HOOK before expanding the snippet."
   (with-temp-file target
     (require 'yasnippet)
 
+    ;; Set a major mode for the temp file, otherwise, yasnippet won't indent
+    ;; the snippet correctly. NOTE: `set-auto-mode' needs a proper filename to
+    ;; determine a major mode.
+    (let ((buffer-file-name target))
+      (set-auto-mode t))
+
     (ptemplate--setup-snippet-env expand-env)
     (mapc #'funcall snippet-setup-hook)
 
