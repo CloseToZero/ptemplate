@@ -169,13 +169,9 @@ This mode is only for keybindings."
                . ,ptemplate-snippet-chain-mode-map)))
       (add-to-list 'emulation-mode-map-alists
                    'ptemplate-snippet-chain-mode-map-alist))
-    (if-let ((key (car (where-is-internal #'ptemplate-snippet-chain-next))))
-        (message "Press %s to continue to the next snippet or finish"
-                 (key-description key))
-      ;; The key binding may be overridden by other minor modes, let the
-      ;; user invoke the command instead (or define another key binding).
-      (message "Invoke command `ptemplate-snippet-chain-next' \
-to continue to the next snippet or finish")))
+    (message
+     (substitute-command-keys
+      "Continue to the next snippet or finish with `\\[ptemplate-snippet-chain-next]'.")))
   (when (or (not ptemplate-snippet-chain-mode)
             (not ptemplate-use-emulation-mode-map-alists))
     (setq emulation-mode-map-alists
